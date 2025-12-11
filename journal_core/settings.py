@@ -129,6 +129,9 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles' 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# Fallback to simple storage if manifest is missing (helps with 500 errors on first deploy)
+if not DEBUG:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Cloud Run / Prod Config
 CSRF_TRUSTED_ORIGINS = ['https://*.run.app', 'https://*.replit.co', 'https://*.onrender.com']
