@@ -99,20 +99,32 @@ class EntryAdmin(admin.ModelAdmin):
 
 
 @admin.register(SiteConfiguration)
-    list_display = ('site_name', 'allow_registration', 'maintenance_mode')
+class SiteConfigurationAdmin(admin.ModelAdmin):
+    """Site configuration admin"""
+    list_display = ('site_name', 'maintenance_mode', 'allow_registration')
     fieldsets = (
         ('General Settings', {
             'fields': ('site_name', 'welcome_message')
         }),
         ('Access Control', {
-            'fields': ('allow_registration', 'maintenance_mode'),
-            'description': "<span style='color:red;'>Warning: Maintenance mode will block all non-admin users.</span>"
+            'fields': ('maintenance_mode', 'allow_registration')
         }),
     )
     
-    # Restrict creation/deletion to ensure singleton behavior in UI
     def has_add_permission(self, request):
+        # Only allow one instance
         return not SiteConfiguration.objects.exists()
-
+    
     def has_delete_permission(self, request, obj=None):
+        # Prevent deletion
         return False
+
+
+# Unregister the default User admin and register our custom one
+admin.site.unregister(User)
+admin.site.register(User, CustomUserAdmin)
+
+# Customize admin site headers
+admin.site.site_header = "Journal Pro Administration"
+admin.site.site_title = "Journal Admin"
+admin.site.index_title = "Welcome to Journal Pro Admin Portal"
