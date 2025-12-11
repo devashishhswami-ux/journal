@@ -20,7 +20,13 @@ def get_client_ip(request):
 @ensure_csrf_cookie
 def index(request):
     """Renders the main SPA."""
-    return render(request, 'journal/index.html')
+    from .models import SiteConfiguration
+    config = SiteConfiguration.load()
+    
+    if config.maintenance_mode and not request.user.is_staff:
+        return HttpResponse("<h1>Maintenance Mode</h1><p>We are currently upgrading the system. Please try again later.</p>", status=503)
+
+    return render(request, 'journal/index.html', {'config': config})
 
 @login_required
 def api_entries(request):
