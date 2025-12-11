@@ -125,23 +125,4 @@ def proxy_translate(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-@login_required
-def ai_check_grammar(request):
-    """API to check grammar using Gemini."""
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            text = data.get('text', '')
-            if not text:
-                return JsonResponse({'error': 'No text provided'}, status=400)
-            
-            from .ai_utils import check_grammar
-            result = check_grammar(text)
-            
-            if 'error' in result:
-                return JsonResponse(result, status=500)
-            
-            return JsonResponse(result)
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-    return JsonResponse({'error': 'Method not allowed'}, status=405)
+
