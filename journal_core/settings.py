@@ -38,18 +38,19 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     
+    #Local apps (MUST be before allauth to override templates)
+    'journal',
+    
     # Third-party apps
     'allauth',
     'allauth.account',
+    'allauth.socialaccount',  # Required for template tags
     'widget_tweaks',
-    
-    # Local apps
-    'journal',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Serve static files in production
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -79,11 +80,15 @@ TEMPLATES = [
 WSGI_APPLICATION = 'journal_core.wsgi.application'
 
 # Database
-# Support for External DB (Render/Neon) via DATABASE_URL
+# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
+
+# Use DATABASE_URL from environment (Neon PostgreSQL for production)
+# Falls back to SQLite for local development
 DATABASES = {
     'default': dj_database_url.config(
         default=f'sqlite:///{BASE_DIR / "db.sqlite3"}',
-        conn_max_age=600
+        conn_max_age=600,  # Connection pooling
+        conn_health_checks=True,  # Check connection health
     )
 }
 
@@ -118,16 +123,15 @@ SITE_ID = 1
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 
-# Custom Login Config
-ACCOUNT_LOGIN_METHODS = {'email', 'username'}
-ACCOUNT_SIGNUP_FIELDS = ['email', 'username']
-ACCOUNT_EMAIL_VERIFICATION = 'none' # For simplicity
+# Custom allauth configuration
+ACCOUNT_FORMS = {
+    'signup': 'journal.forms.CustomSignupForm',
+}
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/6.0/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
+# Login/Signup Configuration (Updated for latest allauth)
+ACCOUNT_LOGIN_METHODS = {'username'}  # Only username login
+ACCOUNT_SIGNUP_FIELDS = ['username*', 'password1*', 'password2*']  # Only required fields
+ACCOUNT_EMAIL_VERIFICATION = 'none'  # No email verification
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -146,18 +150,26 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Internationalization
+# https://docs.djangoproject.com/en/5.1/topics/i18n/
+
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
-# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/5.1/howto/static-files/
+
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# SIMPLIFIED FOR STABILITY: Use basic WhiteNoise storage to prevent manifest errors
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+# WhiteNoise for serving static files in production
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Cloud Run / Prod Config
 CSRF_TRUSTED_ORIGINS = ['https://*.run.app', 'https://*.replit.co', 'https://*.onrender.com']

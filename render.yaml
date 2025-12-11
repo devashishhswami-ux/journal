@@ -1,15 +1,28 @@
 services:
   - type: web
-    name: journal-app
-    env: python
-    buildCommand: "./build.sh"
-    startCommand: "gunicorn journal_core.wsgi:application"
+    name: journal-pro
+    runtime: python
+    plan: free  # Use free plan, can upgrade to Standard for 24/7
+    buildCommand: chmod +x build.sh && ./build.sh
+    startCommand: gunicorn journal_core.wsgi:application
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.10.0
-      - key: DEBUG
-        value: 'False'
       - key: SECRET_KEY
         generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: journal-db
+          property: connectionString
+      - key: PYTHONUNBUFFERED
+        value: "1"
       - key: WEB_CONCURRENCY
-        value: 4
+        value: "4"
+    healthCheckPath: /
+    autoDeploy: true
+
+databases:
+  - name: journal-db
+    plan: free
+    databaseName: journal_db
+    user: journal_user

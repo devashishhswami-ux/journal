@@ -8,27 +8,72 @@
     <title>{% block head_title %}{% endblock %} | Journal Pro</title>
     <!-- Tailwind CSS (CDN for Login Pages Only) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+        }
+
+        .auth-card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .auth-card {
+            animation: slideUp 0.5s ease-out;
         }
     </style>
 </head>
 
-<body class="bg-gray-50 flex items-center justify-center min-h-screen">
-    <div class="w-full max-w-md bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-md auth-card p-8 rounded-2xl shadow-2xl border border-white/20">
         <div class="text-center mb-8">
+            <div
+                class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-600 to-green-700 rounded-full mb-4 shadow-lg">
+                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+            </div>
             <h1 class="text-3xl font-bold text-gray-900 mb-2">Journal Pro</h1>
-            <p class="text-gray-500 text-sm">{% block subtitle %}Welcome back{% endblock %}</p>
+            <p class="text-gray-600 text-sm font-medium">{% block subtitle %}Welcome{% endblock %}</p>
         </div>
 
         {% if messages %}
-        <div class="mb-4">
+        <div class="mb-6 space-y-2">
             {% for message in messages %}
             <div
-                class="p-3 rounded text-sm {% if message.tags == 'error' %}bg-red-50 text-red-600{% else %}bg-green-50 text-green-600{% endif %}">
-                {{ message }}
+                class="p-4 rounded-lg text-sm font-medium animate-pulse {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200{% else %}bg-green-50 text-green-700 border border-green-200{% endif %}">
+                <div class="flex items-center">
+                    {% if message.tags == 'error' %}
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    {% else %}
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    {% endif %}
+                    {{ message }}
+                </div>
             </div>
             {% endfor %}
         </div>
