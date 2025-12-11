@@ -44,7 +44,7 @@
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/journal-app.git
+   git clone https://github.com/devashishhswami-ux/journal.git
    cd journal-app
    ```
 
@@ -106,4 +106,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-Made with ❤️ by [Your Name]
+Made with ❤️ by K2
