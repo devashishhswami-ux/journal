@@ -1,4 +1,4 @@
-dasgiref==3.8.1
+asgiref==3.8.1
 Django==5.1
 django-allauth==65.3.0
 django-jazzmin==3.0.1
