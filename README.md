@@ -31,6 +31,19 @@ git push -u origin main
 
 Wait 1-2 minutes, and your site will be live at `https://YOUR_USERNAME.github.io/my-journal/`!
 
+## ⚡ Deployment on Replit (For 24/7 Backend)
+If you want the **Premium Translation** backend to specific work 24/7 online:
+
+1.  **Create a new Repl:** Go to [Replit](https://replit.com/new).
+2.  **Import from GitHub:** Select "Import from GitHub" and paste your repository URL.
+3.  **Run:** Click the big green **Run** button.
+    *   Replit will detect the `.replit` file I created and automatically start `server.py`.
+4.  **24/7 Uptime:**
+    *   *Free Plan:* Replit puts apps to sleep after inactivity. It will wake up when you visit the URL, but it won't be technically "Always On".
+    *   *Hacker/Pro Plan:* You can enable "Always On" in the Repl settings to keep it running 24/7 without sleeping.
+
+Once running, Replit will give you a release URL (e.g., `https://my-journal.yourname.repl.co`). Use that URL to access your journal!
+
 ---
 
 ## 🌍 Translation Feature Note
