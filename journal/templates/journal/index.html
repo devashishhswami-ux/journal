@@ -1,3 +1,5 @@
+{% load static %}
+{% load socialaccount %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -12,11 +14,13 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Inter:wght@400;700&family=Lato:wght@400;700&family=Lora:ital,wght@0,400;1,400&family=Merriweather:wght@400;700&family=Montserrat:wght@400;700&family=Nunito:wght@400;700&family=Open+Sans:wght@400;700&family=Oswald:wght@400;700&family=Playfair+Display:wght@400;700&family=Poppins:wght@400;700&family=Raleway:wght@400;700&family=Roboto:wght@400;700&family=Source+Code+Pro:wght@400;700&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="{% static 'journal/css/styles.css' %}">
+    <meta name="csrf-token" content="{{ csrf_token }}">
 </head>
 
 <body>
 
+    {% if user.is_authenticated %}
     <div class="app-layout">
         <!-- Left Sidebar for Saved Journals -->
         <aside class="sidebar">
@@ -24,15 +28,28 @@
                 <h2>Journals</h2>
                 <button id="newEntryBtn" title="New Entry">+</button>
             </div>
-            <div class="sidebar-actions" style="padding: 0 10px 10px 10px; border-bottom: 1px solid #eee;">
-                <button id="exportBtn"
-                    style="width:100%; padding: 5px; cursor:pointer; border:1px solid #ddd; background:#fff; border-radius:4px; font-size:0.8rem;">
-                    ⬇ Export Backup
-                </button>
+            <div class="sidebar-actions"
+                style="padding: 10px; border-bottom: 1px solid #eee; display: flex; flex-direction: column; gap: 5px;">
+                <div class="user-profile" style="font-size: 0.8rem; margin-bottom: 5px; color: #555;">
+                    👤 {{ user.username }}
+                </div>
+                <a href="{% url 'export_zip' %}" id="exportBtn" style="text-decoration:none;">
+                    <button
+                        style="width:100%; padding: 5px; cursor:pointer; border:1px solid #ddd; background:#fff; border-radius:4px; font-size:0.8rem;">
+                        ⬇ Export ZIP
+                    </button>
+                </a>
+                <form method="post" action="{% url 'account_logout' %}">
+                    {% csrf_token %}
+                    <button type="submit"
+                        style="width:100%; padding: 5px; cursor:pointer; border:1px solid #ddd; background:#ffebeb; border-radius:4px; font-size:0.8rem; color: #d32f2f;">
+                        🚪 Logout
+                    </button>
+                </form>
             </div>
             <div id="entriesList" class="entries-list">
                 <!-- Entries injected here -->
-                <p class="empty-state">No entries yet.</p>
+                <p class="empty-state">Loading...</p>
             </div>
         </aside>
 
@@ -89,13 +106,13 @@
 
                 <div class="tool-group">
                     <button type="button" data-cmd="justifyLeft" title="Align Left">
-                        <ion-icon name="text-outline"></ion-icon> <!-- Fallback icon -->
+                        <ion-icon name="text-outline"></ion-icon>
                     </button>
                     <button type="button" data-cmd="justifyCenter" title="Align Center">
-                        <ion-icon name="reorder-two-outline"></ion-icon> <!-- Fallback icon -->
+                        <ion-icon name="reorder-two-outline"></ion-icon>
                     </button>
                     <button type="button" data-cmd="justifyRight" title="Align Right">
-                        <ion-icon name="reorder-three-outline"></ion-icon> <!-- Fallback icon -->
+                        <ion-icon name="reorder-three-outline"></ion-icon>
                     </button>
                 </div>
 
@@ -130,23 +147,9 @@
                             <option value="it">Italian</option>
                             <option value="pt">Portuguese</option>
                         </optgroup>
-                        <optgroup label="Asian">
-                            <option value="zh">Chinese</option>
-                            <option value="ja">Japanese</option>
-                            <option value="ko">Korean</option>
-                            <option value="hi">Hindi</option>
-                            <option value="bn">Bengali</option>
-                            <option value="ar">Arabic</option>
-                        </optgroup>
-                        <optgroup label="Others">
-                            <option value="ru">Russian</option>
-                            <option value="nl">Dutch</option>
-                            <option value="pl">Polish</option>
-                            <option value="tr">Turkish</option>
-                            <option value="vi">Vietnamese</option>
-                            <option value="th">Thai</option>
-                            <option value="sv">Swedish</option>
-                        </optgroup>
+                        <!-- Add more as needed -->
+                        <option value="hi">Hindi</option>
+                        <option value="ja">Japanese</option>
                     </select>
                     <button type="button" id="startTranslationBtn" title="Translate Selected Text">
                         <ion-icon name="language-outline"></ion-icon>
@@ -166,7 +169,6 @@
                         <input type="checkbox" id="spellCheckToggle" checked> Abc
                     </label>
                 </div>
-                <!-- Date/Time Display fixed in header usually, but user removed header. Let's put it here or top right -->
                 <span id="dateTimeDisplay" class="date-time"></span>
                 <button id="saveBtn">Save Entry</button>
             </div>
@@ -184,7 +186,79 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="{% static 'journal/js/script.js' %}"></script>
+    {% else %}
+
+    <!-- Login Screen -->
+    <div class="login-container">
+        <div class="login-box">
+            <h1>Journal App</h1>
+            <p>Sign in to access your secure journal.</p>
+            <a href="{% provider_login_url 'google' %}" class="google-btn">
+                <ion-icon name="logo-google"></ion-icon> Sign in with Google
+            </a>
+            <div class="info-note">
+                <small>Requires Google OAuth credentials in setup.</small>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f9f9f9;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .login-box h1 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .login-box p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .google-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: #4285F4;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .google-btn:hover {
+            background: #357ae8;
+        }
+
+        .info-note {
+            margin-top: 20px;
+            color: #999;
+        }
+    </style>
+    {% endif %}
+
 </body>
 
 </html>
