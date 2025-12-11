@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Journal</title>
+    <!-- Ionicons -->
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Inter:wght@400;700&family=Lato:wght@400;700&family=Lora:ital,wght@0,400;1,400&family=Merriweather:wght@400;700&family=Montserrat:wght@400;700&family=Nunito:wght@400;700&family=Open+Sans:wght@400;700&family=Oswald:wght@400;700&family=Playfair+Display:wght@400;700&family=Poppins:wght@400;700&family=Raleway:wght@400;700&family=Roboto:wght@400;700&family=Source+Code+Pro:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <div class="app-layout">
+        <!-- Left Sidebar for Saved Journals -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Journals</h2>
+                <button id="newEntryBtn" title="New Entry">+</button>
+            </div>
+            <div class="sidebar-actions" style="padding: 0 10px 10px 10px; border-bottom: 1px solid #eee;">
+                <button id="exportBtn"
+                    style="width:100%; padding: 5px; cursor:pointer; border:1px solid #ddd; background:#fff; border-radius:4px; font-size:0.8rem;">
+                    ⬇ Export Backup
+                </button>
+            </div>
+            <div id="entriesList" class="entries-list">
+                <!-- Entries injected here -->
+                <p class="empty-state">No entries yet.</p>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+
+            <!-- Initial Title Screen (Overlay) -->
+            <div id="titleScreen" class="title-screen">
+                <input type="text" id="titleInput" placeholder="Title your day..." autocomplete="off">
+                <div class="hint">Press Enter to Start</div>
+            </div>
+
+            <!-- Toolbar (Visible in Writing Mode) -->
+            <div id="formattingToolbar" class="formatting-toolbar">
+                <div class="tool-group">
+                    <select id="fontSelector" title="Font Family" style="width: 110px;">
+                        <option value="Segoe UI">Default</option>
+                        <option value="'Inter', sans-serif">Inter</option>
+                        <option value="'Roboto', sans-serif">Roboto</option>
+                        <option value="'Open Sans', sans-serif">Open Sans</option>
+                        <option value="'Lato', sans-serif">Lato</option>
+                        <option value="'Montserrat', sans-serif">Montserrat</option>
+                        <option value="'Poppins', sans-serif">Poppins</option>
+                        <option value="'Playfair Display', serif">Playfair</option>
+                        <option value="'Merriweather', serif">Merriweather</option>
+                        <option value="'Lora', serif">Lora</option>
+                        <option value="'Dancing Script', cursive">Dancing Script</option>
+                        <option value="'Source Code Pro', monospace">Monospace</option>
+                    </select>
+                </div>
+
+                <div class="tool-group">
+                    <select id="headingSelector" title="Text Style" style="width: 100px;">
+                        <option value="p">Normal</option>
+                        <option value="h1">Heading 1</option>
+                        <option value="h2">Heading 2</option>
+                        <option value="h3">Heading 3</option>
+                    </select>
+                </div>
+
+                <div class="tool-divider"></div>
+
+                <div class="tool-group">
+                    <button type="button" data-cmd="bold" title="Bold Text"><b>B</b></button>
+                    <button type="button" data-cmd="italic" title="Italic Text">
+                        <i>I</i>
+                    </button>
+                    <button type="button" data-cmd="underline" title="Underline Text">
+                        <u>U</u>
+                    </button>
+                </div>
+
+                <div class="tool-divider"></div>
+
+                <div class="tool-group">
+                    <button type="button" data-cmd="justifyLeft" title="Align Left">
+                        <ion-icon name="text-outline"></ion-icon> <!-- Fallback icon -->
+                    </button>
+                    <button type="button" data-cmd="justifyCenter" title="Align Center">
+                        <ion-icon name="reorder-two-outline"></ion-icon> <!-- Fallback icon -->
+                    </button>
+                    <button type="button" data-cmd="justifyRight" title="Align Right">
+                        <ion-icon name="reorder-three-outline"></ion-icon> <!-- Fallback icon -->
+                    </button>
+                </div>
+
+                <div class="tool-divider"></div>
+
+                <div class="tool-group">
+                    <button type="button" data-cmd="insertUnorderedList" title="Bullet List">
+                        <ion-icon name="list-outline"></ion-icon>
+                    </button>
+                    <button type="button" data-cmd="insertOrderedList" title="Numbered List">
+                        <ion-icon name="list-circle-outline"></ion-icon>
+                    </button>
+                </div>
+
+                <div class="tool-divider"></div>
+
+                <div class="tool-group">
+                    <div class="color-picker-wrapper" title="Text Color">
+                        <ion-icon name="color-palette-outline"></ion-icon>
+                        <input type="color" id="foreColorBtn" value="#333333">
+                    </div>
+                </div>
+
+                <div class="tool-divider"></div>
+
+                <div class="tool-group">
+                    <select id="langSelector" title="Translate to..." style="width: 90px; margin-right:5px;">
+                        <optgroup label="Popular">
+                            <option value="es">Spanish</option>
+                            <option value="fr">French</option>
+                            <option value="de">German</option>
+                            <option value="it">Italian</option>
+                            <option value="pt">Portuguese</option>
+                        </optgroup>
+                        <optgroup label="Asian">
+                            <option value="zh">Chinese</option>
+                            <option value="ja">Japanese</option>
+                            <option value="ko">Korean</option>
+                            <option value="hi">Hindi</option>
+                            <option value="bn">Bengali</option>
+                            <option value="ar">Arabic</option>
+                        </optgroup>
+                        <optgroup label="Others">
+                            <option value="ru">Russian</option>
+                            <option value="nl">Dutch</option>
+                            <option value="pl">Polish</option>
+                            <option value="tr">Turkish</option>
+                            <option value="vi">Vietnamese</option>
+                            <option value="th">Thai</option>
+                            <option value="sv">Swedish</option>
+                        </optgroup>
+                    </select>
+                    <button type="button" id="startTranslationBtn" title="Translate Selected Text">
+                        <ion-icon name="language-outline"></ion-icon>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Editor -->
+            <div id="journalArea" class="journal-editor" contenteditable="true" spellcheck="true" lang="en"
+                placeholder="Start writing..."></div>
+
+            <!-- Bottom Stats -->
+            <div class="stats-bar">
+                <div class="left-controls">
+                    <span id="timerDisplay">00:00:00</span>
+                    <label class="spell-toggle" title="Toggle Spell Check">
+                        <input type="checkbox" id="spellCheckToggle" checked> Abc
+                    </label>
+                </div>
+                <!-- Date/Time Display fixed in header usually, but user removed header. Let's put it here or top right -->
+                <span id="dateTimeDisplay" class="date-time"></span>
+                <button id="saveBtn">Save Entry</button>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Success Popup -->
+    <div id="popupOverlay" class="overlay hidden">
+        <div class="popup-content">
+            <div class="check-icon">✓</div>
+            <h2>Saved!</h2>
+            <p>You wrote for <span id="finalTime" class="highlight">00:00:00</span>.</p>
+            <button id="closePopupBtn">Continue</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
