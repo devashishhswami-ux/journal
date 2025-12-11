@@ -134,5 +134,5 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Cloud Run / Prod Config
-CSRF_TRUSTED_ORIGINS = ['https://*.run.app', 'https://*.replit.co']
+CSRF_TRUSTED_ORIGINS = ['https://*.run.app', 'https://*.replit.co', 'https://*.onrender.com']
 
