@@ -1,5 +1,5 @@
-run = "python3 server.py"
-entrypoint = "server.py"
+run = "python manage.py ensure_admin && python manage.py runserver 0.0.0.0:8080"
+entrypoint = "manage.py"
 
 [nix]
 channel = "stable-23_11"
