@@ -24,7 +24,12 @@ ALLOWED_HOSTS = ['*']
 
 # Application definition
 
+import dj_database_url
+
+# Application definition
+
 INSTALLED_APPS = [
+    'jazzmin', # Admin UI (Must be before admin)
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -35,7 +40,7 @@ INSTALLED_APPS = [
     # Third-party apps
     'allauth',
     'allauth.account',
-    # 'allauth.socialaccount', # Removed for custom auth
+    'widget_tweaks',
     
     # Local apps
     'journal',
@@ -43,14 +48,13 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', # Static files for Prod
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # Allauth middleware
     'allauth.account.middleware.AccountMiddleware',
 ]
 
@@ -74,11 +78,32 @@ TEMPLATES = [
 WSGI_APPLICATION = 'journal_core.wsgi.application'
 
 # Database
+# Support for External DB (Render/Neon) via DATABASE_URL
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=f'sqlite:///{BASE_DIR / "db.sqlite3"}',
+        conn_max_age=600
+    )
+}
+
+# Jazzmin UI Settings
+JAZZMIN_SETTINGS = {
+    "site_title": "Journal Admin",
+    "site_header": "Journal App",
+    "site_brand": "Journal Pro",
+    "welcome_sign": "Welcome Admin",
+    "copyright": "Journal App Ltd",
+    "search_model": "journal.Entry",
+    "topmenu_links": [
+        {"name": "Home",  "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": "View Site", "url": "/", "new_window": True},
+    ],
+    "show_ui_builder": False,
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "theme": "flatly",
+    "sidebar": "sidebar-dark-primary",
 }
 
 # Auth config

@@ -77,24 +77,35 @@ def api_entries(request):
 
 @login_required
 def export_zip(request):
-    """Export all user entries as a ZIP file."""
+    """Exports user entries as a ZIP file of text files."""
+    from django.utils.html import strip_tags
+    import zipfile
+    import io
+    
     entries = Entry.objects.filter(user=request.user)
     
-    zip_buffer = io.BytesIO()
-    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-        for entry in entries:
-            # Create a filename: Date - Title.txt
-            date_str = entry.created_at.strftime('%Y-%m-%d')
-            safe_title = "".join([c for c in entry.title if c.isalnum() or c in (' ', '-', '_')]).strip()
-            filename = f"{date_str} - {safe_title}.html"
-            
-            # content
-            file_content = f"<h1>{entry.title}</h1><p>Date: {date_str}</p><hr>{entry.content}"
-            zip_file.writestr(filename, file_content)
+    if not entries.exists():
+        return JsonResponse({'error': 'No entries to export'}, status=404)
 
-    zip_buffer.seek(0)
-    response = HttpResponse(zip_buffer, content_type='application/zip')
-    response['Content-Disposition'] = 'attachment; filename="my_journal_backup.zip"'
+    # Create zip buffer
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        for entry in entries:
+            # Format: 'Title - Date.txt'
+            date_str = entry.created_at.strftime('%Y-%m-%d')
+            # Safe filename: replace non-alphanumeric chars (keep spaces/dashes)
+            safe_title = "".join([c for c in entry.title if c.isalnum() or c in (' ', '-', '_')]).strip()
+            filename = f"{date_str} - {safe_title}.txt"
+            
+            # Content: Title, Date, Content
+            clean_content = strip_tags(entry.content)
+            file_content = f"Title: {entry.title}\nDate: {entry.created_at.strftime('%Y-%m-%d %H:%M')}\nDuration: {entry.duration_str}\n\n{clean_content}"
+            
+            zip_file.writestr(filename, file_content)
+    
+    buffer.seek(0)
+    response = HttpResponse(buffer, content_type='application/zip')
+    response['Content-Disposition'] = 'attachment; filename="journal_backup.zip"'
     return response
 
 def proxy_translate(request):

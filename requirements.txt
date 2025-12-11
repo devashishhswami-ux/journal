@@ -6,3 +6,8 @@ cryptography
 PyJWT
 gunicorn
 whitenoise
+django-jazzmin
+dj-database-url
+psycopg2-binary
+beautifulsoup4
+django-widget-tweaks
