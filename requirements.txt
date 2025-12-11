@@ -5,3 +5,5 @@ requests
 cryptography
 PyJWT
 google-generativeai
+gunicorn
+whitenoise
