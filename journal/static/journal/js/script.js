@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
         foreColorBtn: document.getElementById('foreColorBtn'),
         dateTimeDisplay: document.getElementById('dateTimeDisplay'),
         startTranslationBtn: document.getElementById('startTranslationBtn'),
+        aiGrammarBtn: document.getElementById('aiGrammarBtn'),
         langSelector: document.getElementById('langSelector')
     };
 
@@ -133,6 +134,64 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.startTranslationBtn.classList.remove('loading-pulse');
         }
     });
+
+    // AI Grammar Check
+    if (elements.aiGrammarBtn) {
+        elements.aiGrammarBtn.addEventListener('click', async () => {
+            let textToCheck = "";
+            const selection = window.getSelection();
+            const selectedText = selection.toString();
+
+            const isSelection = !!selectedText.trim();
+            textToCheck = isSelection ? selectedText : elements.journalArea.innerText;
+
+            if (!textToCheck.trim()) {
+                showToast("⚠️ Nothing to check!", 2000);
+                return;
+            }
+
+            const btnIcon = elements.aiGrammarBtn.firstElementChild;
+            const originalIcon = btnIcon.name;
+            btnIcon.name = 'sync-outline';
+            elements.aiGrammarBtn.classList.add('loading-pulse');
+
+            try {
+                const res = await fetch('/api/ai/grammar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({ text: textToCheck })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.corrected) {
+                        elements.journalArea.focus();
+                        if (isSelection) {
+                            document.execCommand('insertText', false, data.corrected);
+                        } else {
+                            if (confirm("AI Suggestion:\n\n" + data.corrected + "\n\nApply changes?")) {
+                                elements.journalArea.innerText = data.corrected;
+                            }
+                        }
+                        showToast("✨ Grammar Check Complete!", 3000);
+                    } else {
+                        showToast("✅ No issues found.", 2000);
+                    }
+                } else {
+                    throw new Error("AI Error");
+                }
+            } catch (e) {
+                console.error(e);
+                showToast("❌ AI Busy or Error", 3000);
+            } finally {
+                btnIcon.name = originalIcon;
+                elements.aiGrammarBtn.classList.remove('loading-pulse');
+            }
+        });
+    }
 
 
     function showToast(msg, duration) {

@@ -35,8 +35,7 @@ INSTALLED_APPS = [
     # Third-party apps
     'allauth',
     'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
+    # 'allauth.socialaccount', # Removed for custom auth
     
     # Local apps
     'journal',
@@ -59,7 +58,7 @@ ROOT_URLCONF = 'journal_core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'], # Global templates
+        'DIRS': [BASE_DIR / 'templates'], 
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -74,8 +73,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'journal_core.wsgi.application'
 
 # Database
-# Uses SQLite by default. If DATABASE_URL is present (e.g. from Render/Neon), use it.
-# Note: For production, you would typically use dj-database-url, but for now we stick to simple logic.
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -92,20 +89,17 @@ AUTHENTICATION_BACKENDS = [
 SITE_ID = 1
 
 LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/accounts/login/'
 
-# Google Provider Config
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'SCOPE': [
-            'profile',
-            'email',
-        ],
-        'AUTH_PARAMS': {
-            'access_type': 'online',
-        }
-    }
-}
+# Custom Login Config
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = True
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
+ACCOUNT_EMAIL_VERIFICATION = 'none' # For simplicity
+
+# Gemini AI
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
