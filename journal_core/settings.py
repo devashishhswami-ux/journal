@@ -224,3 +224,31 @@ LOGGING = {
     },
 }
 
+# ====================================
+# EMAIL CONFIGURATION FOR PASSWORD RESET
+# ====================================
+
+# Email Backend Configuration
+# For development: Use console backend (prints emails to console)
+# For production: Use SMTP with Gmail or another email service
+EMAIL_BACKEND = os.getenv(
+    'EMAIL_BACKEND', 
+    'django.core.mail.backends.console.EmailBackend'  # Default to console for dev
+)
+
+# SMTP Configuration (for production)
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')  # Your email address
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')  # App-specific password
+
+# Email sender configuration
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', f'Journal Pro <{EMAIL_HOST_USER}>')
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+# Email subject prefix
+EMAIL_SUBJECT_PREFIX = '[Journal Pro] '
+
+# Timeout for email sending (in seconds)
+EMAIL_TIMEOUT = 10
