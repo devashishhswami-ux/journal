@@ -36,5 +36,13 @@ class CustomSignupForm(SignupForm):
             self.fields[field_name].help_text = ''
     
     def save(self, request):
+        """Save the user with proper email handling for PostgreSQL"""
         user = super().save(request)
+        
+        # PostgreSQL requires email to be NOT NULL
+        # If no email provided, set to empty string
+        if not user.email:
+            user.email = ''
+            user.save()
+        
         return user
