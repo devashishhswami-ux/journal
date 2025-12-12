@@ -432,6 +432,38 @@ button {
     font-size: 0.9rem;
 }
 
+/* Start Writing Button */
+.start-writing-btn {
+    margin-top: 20px;
+    padding: 12px 32px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: none;
+    /* Hidden by default on desktop */
+}
+
+.start-writing-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
+}
+
+.start-writing-btn:active {
+    transform: translateY(0);
+}
+
+.start-writing-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+
 /* Toolbar */
 .formatting-toolbar {
     height: auto;
@@ -746,6 +778,12 @@ button {
     .hint {
         font-size: 0.85rem;
     }
+
+    /* Show start writing button on mobile */
+    .start-writing-btn {
+        display: block;
+    }
+
 
     /* Toolbar - better wrapping on mobile */
     .formatting-toolbar {

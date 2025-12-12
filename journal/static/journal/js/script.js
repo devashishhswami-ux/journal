@@ -19,7 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
         foreColorBtn: document.getElementById('foreColorBtn'),
         dateTimeDisplay: document.getElementById('dateTimeDisplay'),
         startTranslationBtn: document.getElementById('startTranslationBtn'),
-        langSelector: document.getElementById('langSelector')
+        langSelector: document.getElementById('langSelector'),
+        startWritingBtn: document.getElementById('startWritingBtn')
     };
 
     // If we are on login screen, some elements might be missing
@@ -93,6 +94,25 @@ document.addEventListener('DOMContentLoaded', () => {
             startWritingMode();
         }
     });
+
+    // Handle "Start Writing" button click
+    elements.startWritingBtn.addEventListener('click', () => {
+        if (elements.titleInput.value.trim() !== '') {
+            startWritingMode();
+        }
+    });
+
+    // Enable/disable button based on title input
+    elements.titleInput.addEventListener('input', () => {
+        if (elements.titleInput.value.trim() !== '') {
+            elements.startWritingBtn.disabled = false;
+        } else {
+            elements.startWritingBtn.disabled = true;
+        }
+    });
+
+    // Initialize button state
+    elements.startWritingBtn.disabled = true;
 
     function startWritingMode() {
         elements.titleScreen.classList.add('hidden');
