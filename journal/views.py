@@ -150,3 +150,36 @@ def delete_entry(request, entry_id):
     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
 
 
+from allauth.account.views import PasswordResetView
+from django.contrib import messages
+from django.shortcuts import redirect
+
+class RateLimitedPasswordResetView(PasswordResetView):
+    """Custom password reset view with rate limiting (once per 24 hours)"""
+    
+    def form_valid(self, form):
+        from .models import PasswordResetRequest
+        
+        email = form.cleaned_data.get('email')
+        ip_address = get_client_ip(self.request)
+        
+        # Check rate limiting
+        can_request, hours_remaining = PasswordResetRequest.can_request_reset(email)
+        
+        if not can_request:
+            # User has already requested a reset within 24 hours
+            hours = int(hours_remaining)
+            minutes = int((hours_remaining - hours) * 60)
+            
+            messages.error(
+                self.request,
+                f"You can only request a password reset once per 24 hours. "
+                f"Please try again in {hours}h {minutes}m."
+            )
+            return redirect('account_reset_password')
+        
+        # Create reset request record
+        PasswordResetRequest.create_request(email, ip_address)
+        
+        # Proceed with normal password reset
+        return super().form_valid(form)
