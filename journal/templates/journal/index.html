@@ -22,6 +22,26 @@
 <body>
 
     {% if user.is_authenticated %}
+
+    <!-- Loading Screen Overlay -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <div class="loading-logo">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+            </div>
+            <h2 class="loading-title">Journal Pro</h2>
+            <p class="loading-tagline">Preparing your thoughts...</p>
+            <div class="loading-spinner">
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Mobile Hamburger Menu Button -->
     <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle menu">
         <span></span>
@@ -204,6 +224,19 @@
 
     <script src="{% static 'journal/js/script.js' %}"></script>
 
+    <!-- Loading Screen Control -->
+    <script>
+        // Hide loading screen after everything is loaded
+        window.addEventListener('load', function () {
+            const loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen) {
+                // Wait for CSS animation to complete (1.5s delay + 0.8s fade = 2.3s total)
+                setTimeout(function () {
+                    loadingScreen.style.display = 'none';
+                }, 2400);
+            }
+        });
+    </script>
     <!-- Mobile Menu Toggle Script -->
     <script>
         // Mobile sidebar toggle functionality
