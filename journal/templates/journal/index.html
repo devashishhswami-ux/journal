@@ -5,7 +5,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>{{ config.site_name }}</title>
     <!-- Ionicons -->
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
@@ -21,6 +22,16 @@
 <body>
 
     {% if user.is_authenticated %}
+    <!-- Mobile Hamburger Menu Button -->
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <div class="app-layout">
         <!-- Left Sidebar for Saved Journals -->
         <aside class="sidebar">
@@ -28,11 +39,18 @@
                 <h2>Journals</h2>
                 <button id="newEntryBtn" title="New Entry">+</button>
             </div>
+            <div class="sidebar-user"
+                style="padding: 12px; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                <div class="user-profile" style="font-size: 0.9rem; color: #333;">
+                    👤 {{ user.email }}
+                </div>
+                <a href="/accounts/logout/" class="logout-btn" title="Logout"
+                    style="color: #999; text-decoration: none; padding: 4px 8px; border-radius: 4px; transition: background 0.2s;">
+                    <ion-icon name="log-out-outline"></ion-icon>
+                </a>
+            </div>
             <div class="sidebar-actions"
                 style="padding: 10px; border-bottom: 1px solid #eee; display: flex; flex-direction: column; gap: 5px;">
-                <div class="user-profile" style="font-size: 0.8rem; margin-bottom: 5px; color: #555;">
-                    👤 {{ user.username }}
-                </div>
                 <a href="{% url 'export_zip' %}" id="exportBtn" style="text-decoration:none;">
                     <button
                         style="width:100%; padding: 5px; cursor:pointer; border:1px solid #ddd; background:#fff; border-radius:4px; font-size:0.8rem;">
@@ -185,6 +203,51 @@
     </div>
 
     <script src="{% static 'journal/js/script.js' %}"></script>
+
+    <!-- Mobile Menu Toggle Script -->
+    <script>
+        // Mobile sidebar toggle functionality
+        (function () {
+            const hamburgerBtn = document.getElementById('hamburgerBtn');
+            const sidebar = document.querySelector('.sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+            if (hamburgerBtn && sidebar && sidebarOverlay) {
+                function toggleSidebar() {
+                    sidebar.classList.toggle('mobile-open');
+                    hamburgerBtn.classList.toggle('active');
+                    sidebarOverlay.classList.toggle('active');
+
+                    if (sidebar.classList.contains('mobile-open')) {
+                        sidebarOverlay.style.display = 'block';
+                        document.body.style.overflow = 'hidden';
+                    } else {
+                        setTimeout(() => {
+                            sidebarOverlay.style.display = 'none';
+                        }, 300);
+                        document.body.style.overflow = '';
+                    }
+                }
+
+                hamburgerBtn.addEventListener('click', toggleSidebar);
+                sidebarOverlay.addEventListener('click', toggleSidebar);
+
+                // Close sidebar when clicking on an entry (mobile only)
+                if (window.innerWidth <= 768) {
+                    const entriesList = document.getElementById('entriesList');
+                    if (entriesList) {
+                        entriesList.addEventListener('click', function (e) {
+                            if (e.target.closest('.entry-card')) {
+                                if (sidebar.classList.contains('mobile-open')) {
+                                    toggleSidebar();
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        })();
+    </script>
     {% else %}
 
     <!-- Login Screen -->

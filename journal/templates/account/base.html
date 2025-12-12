@@ -4,7 +4,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>{% block head_title %}{% endblock %} | Journal Pro</title>
     <!-- Tailwind CSS (CDN for Login Pages Only) -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,6 +15,11 @@
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
             background-attachment: fixed;
+            /* iOS safe area support */
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         .auth-card {
@@ -35,6 +41,35 @@
 
         .auth-card {
             animation: slideUp 0.5s ease-out;
+        }
+
+        /* Mobile responsive improvements */
+        @media screen and (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .auth-card {
+                padding: 24px 20px !important;
+            }
+
+            h1 {
+                font-size: 1.75rem !important;
+            }
+
+            /* Ensure touch-friendly buttons */
+            button,
+            input[type="submit"],
+            a.button {
+                min-height: 48px !important;
+            }
+
+            input[type="email"],
+            input[type="password"] {
+                min-height: 48px !important;
+                font-size: 16px !important;
+                /* Prevents zoom on iOS */
+            }
         }
     </style>
 </head>
