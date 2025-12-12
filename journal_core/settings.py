@@ -121,19 +121,16 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 SITE_ID = 1
-
+# Django Allauth settings
+ACCOUNT_FORMS = {'signup': 'journal.forms.CustomSignupForm'}
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_VERIFICATION = 'none'  # Set to 'mandatory' if you want email verification
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None  # Remove username field requirement
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
-
-# Custom allauth configuration
-ACCOUNT_FORMS = {
-    'signup': 'journal.forms.CustomSignupForm',
-}
-
-# Login/Signup Configuration (Updated for latest allauth)
-ACCOUNT_LOGIN_METHODS = {'username'}  # Only username login
-ACCOUNT_SIGNUP_FIELDS = ['username*', 'password1*', 'password2*']  # Only required fields
-ACCOUNT_EMAIL_VERIFICATION = 'none'  # No email verification
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

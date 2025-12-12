@@ -37,11 +37,13 @@ Simple deployment using **Render for web hosting** + **Neon for database** = 100
 
 **Build & Start**:
 - **Build Command**: 
-  ```bash
+  ```
   chmod +x build.sh && ./build.sh
   ```
+  ⚠️ **Important**: Do NOT add `bash` at the beginning!
+  
 - **Start Command**:
-  ```bash
+  ```
   gunicorn journal_core.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
   ```
 
