@@ -1,0 +1,68 @@
+{% extends "account/base.html" %}
+{% load i18n %}
+
+{% block head_title %}{% trans "Sign Out" %}{% endblock %}
+{% block subtitle %}Come back soon!{% endblock %}
+
+{% block content %}
+
+<div class="text-center mb-6">
+    <div
+        class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-full mb-4 shadow-lg">
+        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+    </div>
+    <h2 class="text-2xl font-bold text-gray-900 mb-2">Sign Out</h2>
+    <p class="text-gray-600 text-sm">Are you sure you want to sign out?</p>
+</div>
+
+<form method="POST" action="{% url 'account_logout' %}" class="space-y-4">
+    {% csrf_token %}
+
+    {% if redirect_field_value %}
+    <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+    {% endif %}
+
+    <div class="flex flex-col gap-3">
+        <button type="submit"
+            class="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-3.5 rounded-lg transition-all duration-200 transform hover:scale-[1.02] active:scale-95 shadow-lg hover:shadow-xl">
+            <span class="flex items-center justify-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Yes, Sign Me Out
+            </span>
+        </button>
+
+        <a href="/"
+            class="w-full bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3.5 rounded-lg border-2 border-gray-300 transition-all duration-200 transform hover:scale-[1.02] active:scale-95 text-center">
+            <span class="flex items-center justify-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                No, Take Me Back
+            </span>
+        </a>
+    </div>
+</form>
+
+<div class="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+    <div class="flex items-start">
+        <svg class="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                clip-rule="evenodd" />
+        </svg>
+        <div class="text-sm text-blue-800">
+            <p class="font-semibold mb-1">Your entries are safe</p>
+            <p class="text-blue-700">All your journal entries are securely saved. You can log back in anytime to
+                continue writing.</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
