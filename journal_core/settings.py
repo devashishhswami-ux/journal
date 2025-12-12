@@ -231,9 +231,10 @@ LOGGING = {
 # Email Backend Configuration
 # For development: Use console backend (prints emails to console)
 # For production: Use SMTP with Gmail or another email service
+# Default to console unless explicitly set to smtp in environment
 EMAIL_BACKEND = os.getenv(
     'EMAIL_BACKEND', 
-    'django.core.mail.backends.console.EmailBackend'  # Default to console for dev
+    'django.core.mail.backends.console.EmailBackend'  # Safe default - prints to logs
 )
 
 # SMTP Configuration (for production)
