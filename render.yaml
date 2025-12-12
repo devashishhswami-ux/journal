@@ -2,9 +2,9 @@ services:
   - type: web
     name: journal-pro
     runtime: python
-    plan: free  # Use free plan, can upgrade to Standard for 24/7
+    plan: free  # Free tier - auto-sleeps after 15min inactivity
     buildCommand: chmod +x build.sh && ./build.sh
-    startCommand: gunicorn journal_core.wsgi:application
+    startCommand: gunicorn journal_core.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120
     envVars:
       - key: SECRET_KEY
         generateValue: true
@@ -17,8 +17,14 @@ services:
       - key: PYTHONUNBUFFERED
         value: "1"
       - key: WEB_CONCURRENCY
-        value: "4"
-    healthCheckPath: /
+        value: "2"
+      - key: ADMIN_USERNAME
+        value: "admin"
+      - key: ADMIN_EMAIL
+        value: "admin@journalpro.com"
+      - key: ADMIN_PASSWORD
+        generateValue: true  # Render will generate a secure password
+    healthCheckPath: /accounts/login/
     autoDeploy: true
 
 databases:

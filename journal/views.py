@@ -137,3 +137,16 @@ def proxy_translate(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+@login_required
+def delete_entry(request, entry_id):
+    """Delete a journal entry (only owner can delete)."""
+    if request.method == 'DELETE' or request.method == 'POST':
+        try:
+            entry = Entry.objects.get(id=entry_id, user=request.user)
+            entry.delete()
+            return JsonResponse({'status': 'deleted', 'message': 'Entry deleted successfully'})
+        except Entry.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Entry not found or you do not have permission'}, status=404)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
+
+

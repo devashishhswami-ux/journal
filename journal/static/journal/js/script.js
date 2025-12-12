@@ -31,8 +31,46 @@ document.addEventListener('DOMContentLoaded', () => {
         startTime: null,
         timerInterval: null,
         isTimerRunning: false,
-        currentEntryId: null
+        currentEntryId: null,
+        undoStack: [],
+        redoStack: [],
+        lastContent: ''
     };
+
+    // --- Keyboard Shortcuts for Undo/Redo ---
+    document.addEventListener('keydown', (e) => {
+        // Ctrl+Z or Cmd+Z for Undo
+        if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+            e.preventDefault();
+            undo();
+        }
+        // Ctrl+Y or Cmd+Shift+Z for Redo
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+            e.preventDefault();
+            redo();
+        }
+    });
+
+    function undo() {
+        if (state.undoStack.length > 0) {
+            const currentContent = elements.journalArea.innerHTML;
+            state.redoStack.push(currentContent);
+            const previousContent = state.undoStack.pop();
+            elements.journalArea.innerHTML = previousContent;
+            showToast("↶ Undo", 1000);
+        }
+    }
+
+    function redo() {
+        if (state.redoStack.length > 0) {
+            const currentContent = elements.journalArea.innerHTML;
+            state.undoStack.push(currentContent);
+            const nextContent = state.redoStack.pop();
+            elements.journalArea.innerHTML = nextContent;
+            showToast("↷ Redo", 1000);
+        }
+    }
+
 
     // --- Initialization ---
     updateDateTime();
@@ -160,14 +198,31 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.journalArea.setAttribute('spellcheck', e.target.checked);
     });
 
-    // 3. Timer
+    // 3. Timer & Undo History Tracking
+    let undoTimeout;
     elements.journalArea.addEventListener('input', () => {
         if (!state.isTimerRunning) {
             state.startTime = new Date();
             state.isTimerRunning = true;
             state.timerInterval = setInterval(updateTimer, 1000);
         }
+
+        // Track undo history (debounced to avoid storing every keystroke)
+        clearTimeout(undoTimeout);
+        undoTimeout = setTimeout(() => {
+            const currentContent = elements.journalArea.innerHTML;
+            if (currentContent !== state.lastContent) {
+                state.undoStack.push(state.lastContent);
+                state.redoStack = []; // Clear redo when new content is added
+                state.lastContent = currentContent;
+                // Limit undo stack to 50 items
+                if (state.undoStack.length > 50) {
+                    state.undoStack.shift();
+                }
+            }
+        }, 500);
     });
+
 
     function updateTimer() {
         if (!state.startTime) return;
@@ -258,21 +313,6 @@ document.addEventListener('DOMContentLoaded', () => {
         entries.forEach(entry => {
             const card = document.createElement('div');
             card.className = 'entry-card';
-            // View logic moved to server/zip, but for now we technically don't have a view page
-            // We could make it reopen in editor?
-            // For now, let's just preview.
-            // Better behavior: Click to load into editor? Or keep view.html?
-            // User asked for "Repoens his journal he doesnt loose any data".
-            // Let's make clicking it READ-ONLY, or LOAD it back.
-            // Let's do simple alert for now or nothing as we removed view.html
-            // Wait, we should probably implement a View mode.
-            card.onclick = () => {
-                // Populate editor
-                state.currentEntryId = entry.id;
-                elements.titleInput.value = entry.title;
-                elements.journalArea.innerHTML = entry.content;
-                startWritingMode();
-            };
 
             const tmp = document.createElement('div');
             tmp.innerHTML = entry.content;
@@ -285,7 +325,52 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <span class="entry-title">${entry.title}</span>
                 <div class="entry-snippet">${preview}...</div>
+                <button class="delete-entry-btn" data-entry-id="${entry.id}" title="Delete this entry">
+                    <ion-icon name="trash-outline"></ion-icon>
+                </button>
             `;
+
+            // Click card to edit
+            card.addEventListener('click', (e) => {
+                // Don't open if clicking delete button
+                if (e.target.closest('.delete-entry-btn')) return;
+
+                state.currentEntryId = entry.id;
+                elements.titleInput.value = entry.title;
+                elements.journalArea.innerHTML = entry.content;
+                state.lastContent = entry.content; // Initialize for undo
+                state.undoStack = [];
+                state.redoStack = [];
+                startWritingMode();
+            });
+
+            // Delete button handler
+            const deleteBtn = card.querySelector('.delete-entry-btn');
+            deleteBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+
+                if (confirm(`Are you sure you want to delete "${entry.title}"? This action cannot be undone.`)) {
+                    try {
+                        const res = await fetch(`/api/entries/delete/${entry.id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRFToken': csrfToken
+                            }
+                        });
+
+                        if (res.ok) {
+                            showToast("🗑️ Entry deleted successfully", 2000);
+                            loadEntries(); // Refresh the list
+                        } else {
+                            throw new Error('Delete failed');
+                        }
+                    } catch (e) {
+                        showToast("❌ Error deleting entry", 3000);
+                        console.error(e);
+                    }
+                }
+            });
+
             elements.entriesList.appendChild(card);
         });
     }
@@ -313,6 +398,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         state.startTime = null;
         state.currentEntryId = null;
+        state.undoStack = [];
+        state.redoStack = [];
+        state.lastContent = '';
         clearInterval(state.timerInterval);
         state.isTimerRunning = false;
         elements.titleInput.focus();

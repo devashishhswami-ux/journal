@@ -21,7 +21,8 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-default-dev-key-change-me'
 # Forcing helpful error messages: Default to TRUE if not explicitly set to False
 DEBUG = os.getenv('DEBUG', 'True') != 'False'
 
-ALLOWED_HOSTS = ['*']
+# ALLOWED_HOSTS - Allow all in development, restrict in production
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',') if os.getenv('ALLOWED_HOSTS') else ['*']
 
 # Application definition
 
@@ -82,13 +83,14 @@ WSGI_APPLICATION = 'journal_core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# Use DATABASE_URL from environment (Neon PostgreSQL for production)
+# Use DATABASE_URL from environment (PostgreSQL for Render production)
 # Falls back to SQLite for local development
 DATABASES = {
     'default': dj_database_url.config(
         default=f'sqlite:///{BASE_DIR / "db.sqlite3"}',
-        conn_max_age=600,  # Connection pooling
+        conn_max_age=600,  # Connection pooling (10 min for free tier)
         conn_health_checks=True,  # Check connection health
+        ssl_require=False,  # Render handles SSL at proxy level
     )
 }
 
@@ -171,24 +173,57 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Cloud Run / Prod Config
-CSRF_TRUSTED_ORIGINS = ['https://*.run.app', 'https://*.replit.co', 'https://*.onrender.com']
+# Production Security Settings
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.run.app', 
+    'https://*.replit.co', 
+    'https://*.onrender.com',
+    'http://localhost:8000',  # For local development
+]
 
-# ALLOWED_HOSTS is already ['*'] but let's ensure it handles headers correctly
+# Proxy SSL Header for production platforms (Render, etc.)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# LOGGING to capture 500 errors in Render logs
+# Security settings for production (only when DEBUG=False)
+if not DEBUG:
+    SECURE_SSL_REDIRECT = False  # Render handles SSL at proxy level
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+
+# LOGGING - Enhanced for better debugging in Render
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{levelname}] {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
         },
     },
     'root': {
         'handlers': ['console'],
         'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
     },
 }
 

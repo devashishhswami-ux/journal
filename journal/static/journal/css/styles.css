@@ -123,6 +123,38 @@ body {
     overflow: hidden;
 }
 
+/* Delete Entry Button */
+.delete-entry-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: transparent;
+    border: none;
+    color: #999;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    opacity: 0;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.entry-card {
+    position: relative; /* For absolute positioning of delete button */
+}
+
+.entry-card:hover .delete-entry-btn {
+    opacity: 1;
+}
+
+.delete-entry-btn:hover {
+    background: #ffe0e0;
+    color: #d32f2f;
+}
+
 .empty-state {
     padding: 20px;
     text-align: center;
