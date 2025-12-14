@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',  # Required for template tags
+    'allauth.socialaccount.providers.google',  # Google OAuth provider
     'widget_tweaks',
 ]
 
@@ -131,6 +132,29 @@ ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None  # Remove username field requirement
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
+
+# Social Account Settings
+SOCIALACCOUNT_LOGIN_ON_GET = True  # Allow immediate redirect to Google
+SOCIALACCOUNT_AUTO_SIGNUP = True  # Automatically create account from social login
+SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'  # Trust email from Google
+
+# Google OAuth Provider Configuration
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+        'APP': {
+            'client_id': os.getenv('GOOGLE_CLIENT_ID', ''),
+            'secret': os.getenv('GOOGLE_CLIENT_SECRET', ''),
+            'key': ''
+        }
+    }
+}
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

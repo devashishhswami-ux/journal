@@ -24,6 +24,15 @@ services:
         value: "admin@journalpro.com"
       - key: ADMIN_PASSWORD
         generateValue: true  # Render will generate a secure password
+      # Google OAuth Configuration - ADD THESE IN RENDER DASHBOARD
+      # Go to Environment tab and add:
+      # - key: GOOGLE_CLIENT_ID
+      #   value: "your-client-id.apps.googleusercontent.com"
+      #- key: GOOGLE_CLIENT_SECRET
+      #   value: "your-client-secret"
+      # Email Configuration (Optional - for password reset emails)
+      # - key: EMAIL_BACKEND
+      #   value: "django.core.mail.backends.smtp.EmailBackend"
     healthCheckPath: /accounts/login/
     autoDeploy: true
 
