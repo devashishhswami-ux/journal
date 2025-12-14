@@ -24,7 +24,7 @@ def index(request):
     config = SiteConfiguration.load()
     
     if config.maintenance_mode and not request.user.is_staff:
-        return HttpResponse("<h1>Maintenance Mode</h1><p>We are currently upgrading the system. Please try again later.</p>", status=503)
+        return render(request, 'maintenance.html', status=503)
 
     return render(request, 'journal/index.html', {'config': config})
 

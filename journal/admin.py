@@ -1,10 +1,123 @@
 from django.contrib import admin
+from django.contrib.admin import AdminSite
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 from django.utils.html import format_html
-from django.urls import reverse
+from django.urls import reverse, path
+from django.shortcuts import render
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+from datetime import timedelta
 from allauth.socialaccount.models import SocialAccount, SocialApp, SocialToken
 from .models import Entry, SiteConfiguration
+import json
+
+
+class CustomAdminSite(AdminSite):
+    """Custom Admin Site with enhanced dashboard"""
+    site_header = "Journal Pro Admin"
+    site_title = "Journal Admin"
+    index_title = "Dashboard"
+    index_template = 'admin/index.html'  # Use custom dashboard template
+    
+    def index(self, request, extra_context=None):
+        """Custom index view with statistics"""
+        extra_context = extra_context or {}
+        
+        # Get site configuration
+        site_config = SiteConfiguration.load()
+        
+        # Calculate statistics
+        total_users = User.objects.count()
+        total_entries = Entry.objects.count()
+        google_users = SocialAccount.objects.filter(provider='google').values('user').distinct().count()
+        
+        # Today's activity
+        today = timezone.now().date()
+        today_start = timezone.make_aware(timezone.datetime.combine(today, timezone.datetime.min.time()))
+        
+        new_users_today = User.objects.filter(date_joined__gte=today_start).count()
+        entries_today = Entry.objects.filter(created_at__gte=today_start).count()
+        
+        # Active users today (created entries today)
+        active_users_today = Entry.objects.filter(
+            created_at__gte=today_start
+        ).values('user').distinct().count()
+        
+        # Recent entries (last 10)
+        recent_entries = Entry.objects.select_related('user').order_by('-created_at')[:10]
+        
+        # Add to context
+        extra_context.update({
+            'site_config': site_config,
+            'total_users': total_users,
+            'total_entries': total_entries,
+            'google_users': google_users,
+            'new_users_today': new_users_today,
+            'entries_today': entries_today,
+            'active_users_today': active_users_today,
+            'recent_entries': recent_entries,
+        })
+        
+        return super().index(request, extra_context)
+    
+    def get_urls(self):
+        """Add custom admin URLs"""
+        urls = super().get_urls()
+        custom_urls = [
+            path('toggle-maintenance/', self.admin_view(self.toggle_maintenance), name='toggle_maintenance'),
+            path('get-stats/', self.admin_view(self.get_stats), name='get_stats'),
+        ]
+        return custom_urls + urls
+    
+    def toggle_maintenance(self, request):
+        """AJAX endpoint to toggle maintenance mode"""
+        if request.method == 'POST':
+            try:
+                data = json.loads(request.body)
+                maintenance_mode = data.get('maintenance_mode', False)
+                
+                # Update site configuration
+                config = SiteConfiguration.load()
+                config.maintenance_mode = maintenance_mode
+                config.save()
+                
+                return JsonResponse({
+                    'success': True,
+                    'maintenance_mode': maintenance_mode,
+                    'message': f'Maintenance mode {"enabled" if maintenance_mode else "disabled"}'
+                })
+            except Exception as e:
+                return JsonResponse({
+                    'success': False,
+                    'message': str(e)
+                }, status=400)
+        
+        return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=400)
+    
+    def get_stats(self, request):
+        """AJAX endpoint to get updated statistics"""
+        total_users = User.objects.count()
+        total_entries = Entry.objects.count()
+        google_users = SocialAccount.objects.filter(provider='google').values('user').distinct().count()
+        
+        today = timezone.now().date()
+        today_start = timezone.make_aware(timezone.datetime.combine(today, timezone.datetime.min.time()))
+        active_users_today = Entry.objects.filter(
+            created_at__gte=today_start
+        ).values('user').distinct().count()
+        
+        return JsonResponse({
+            'total_users': total_users,
+            'total_entries': total_entries,
+            'google_users': google_users,
+            'active_users_today': active_users_today,
+        })
+
+
+# Use custom admin site
+admin_site = CustomAdminSite(name='admin')
 
 
 class SocialAccountInline(admin.TabularInline):
@@ -59,7 +172,6 @@ class CustomUserAdmin(BaseUserAdmin):
     get_social_accounts.short_description = "Login Method"
 
 
-@admin.register(Entry)
 class EntryAdmin(admin.ModelAdmin):
     """Simplified Entry admin with essential info"""
     list_display = ('title', 'user_email', 'created_at', 'ip_address')
@@ -83,7 +195,9 @@ class EntryAdmin(admin.ModelAdmin):
     user_email.short_description = "User Email"
 
 
-@admin.register(SiteConfiguration)
+admin_site.register(Entry, EntryAdmin)
+
+
 class SiteConfigurationAdmin(admin.ModelAdmin):
     """Simple site configuration admin"""
     list_display = ('site_name', 'maintenance_mode', 'allow_registration')
@@ -93,14 +207,11 @@ class SiteConfigurationAdmin(admin.ModelAdmin):
         return not SiteConfiguration.objects.exists()
 
 
-# Unregister the default User admin and register custom one
-admin.site.unregister(User)
-admin.site.register(User, CustomUserAdmin)
+admin_site.register(SiteConfiguration, SiteConfigurationAdmin)
 
-# Customize admin site header
-admin.site.site_header = "Journal Pro Admin"
-admin.site.site_title = "Journal Admin"
-admin.site.index_title = "Welcome to Journal Pro Administration"
+
+# Register User admin with custom admin site
+admin_site.register(User, CustomUserAdmin)
 
 
 # Custom SocialAccount Admin configuration
@@ -185,11 +296,5 @@ class CustomSocialAccountAdmin(admin.ModelAdmin):
     get_all_data.short_description = "Complete Profile Data (JSON)"
 
 
-# Register the custom SocialAccount admin (replaces allauth default)
-# This needs to be done after allauth has loaded, so we do it via apps.py ready() method
-try:
-    admin.site.unregister(SocialAccount)
-    admin.site.register(SocialAccount, CustomSocialAccountAdmin)
-except Exception:
-    # If already unregistered or not yet registered, will be handled in apps.py
-    pass
+# Register the custom SocialAccount admin with custom admin site
+admin_site.register(SocialAccount, CustomSocialAccountAdmin)
